@@ -315,12 +315,12 @@ def process_row(
     row
 ):
 
-    # company_knowledge = (
-    #     get_company_knowledge(driver)
-    # )
+    company_knowledge = (
+        get_company_knowledge(driver)
+    )
 
     # Sementara pada pengujian, company knowledge selalu aktif
-    company_knowledge = True
+    # company_knowledge = True
 
     if not company_knowledge:
 

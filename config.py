@@ -13,7 +13,7 @@ COPY_BUTTON_SELECTOR = (
 )
 
 COMPANY_KNOWLEDGE_SELECTOR = (
-    'button[aria-label="Company Knowledge, click to remove"]'
+    'button[aria-label="Company knowledge, click to remove"]'
 )
 
 LIMIT_KEYWORDS = [
