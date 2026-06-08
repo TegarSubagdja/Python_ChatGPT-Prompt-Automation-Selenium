@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import config
 import logging
 import pyperclip
 import pandas as pd
@@ -16,33 +17,16 @@ from selenium.webdriver.chrome.options import Options
 # CONFIG
 # ==================================================
 
-STOP_FLAG = False
-
-CHATGPT_URL = "chatgpt.com"
-
-PROMPT_TEXTAREA_ID = "prompt-textarea"
-
-VOICE_BUTTON_SELECTOR = (
-    'button[aria-label="Start Voice"]'
-)
-
-COPY_BUTTON_SELECTOR = (
-    'button[aria-label="Copy response"]'
-)
-
-COMPANY_KNOWLEDGE_SELECTOR = (
-    'button[aria-label="Company Knowledge, click to remove"]'
-)
-
-LIMIT_KEYWORDS = [
-    "reach the maximum",
-    "you've reached the maximum",
-    "starting a new chat",
-]
-
-EXCEL_FILE = "Data/data.xlsx"
-EXCEL_SHEET = "Sheet1"
-
+STOP_FLAG = config.STOP_FLAG
+CHATGPT_URL = config.CHATGPT_URL
+PROMPT_TEXTAREA_ID = config.PROMPT_TEXTAREA_ID
+VOICE_BUTTON_SELECTOR = config.VOICE_BUTTON_SELECTOR
+COPY_BUTTON_SELECTOR = config.COPY_BUTTON_SELECTOR
+COMPANY_KNOWLEDGE_SELECTOR = config.COMPANY_KNOWLEDGE_SELECTOR
+LIMIT_KEYWORDS = config.LIMIT_KEYWORDS
+EXCEL_FILE = config.EXCEL_FILE
+EXCEL_SHEET = config.EXCEL_SHEET
+PROMPT_BASE = config.PROMPT_BASE
 # ==================================================
 # LOGGING
 # ==================================================
@@ -187,6 +171,11 @@ def add_company_knowledge(driver):
 
     return True
 
+def send_base_prompt(driver):
+    prompt = get_prompt(driver)
+    prompt.send_keys(PROMPT_BASE)
+    prompt.send_keys(Keys.ENTER)
+
 
 # ==================================================
 # VALIDATION
@@ -316,12 +305,12 @@ def process_row(
     row
 ):
 
-    # company_knowledge = (
-    #     get_company_knowledge(driver)
-    # )
+    company_knowledge = (
+        get_company_knowledge(driver)
+    )
 
     # Sementara pada pengujian, company knowledge selalu aktif
-    company_knowledge = True
+    # company_knowledge = True
 
     if not company_knowledge:
 
@@ -427,72 +416,73 @@ def on_press(key):
 # MAIN
 # ==================================================
 
-options = Options()
-options.debugger_address = "127.0.0.1:9222"
+if __name__ == "__main__":
+    options = Options()
+    options.debugger_address = "127.0.0.1:9222"
 
-driver = webdriver.Chrome(
-    options=options
-)
-
-driver = find_chatgpt_tab(driver)
-
-if not driver:
-    raise Exception(
-        "Tab ChatGPT tidak ditemukan"
+    driver = webdriver.Chrome(
+        options=options
     )
 
-data = pd.read_excel(
-    EXCEL_FILE,
-    sheet_name=EXCEL_SHEET,
-    dtype=str
-)
+    driver = find_chatgpt_tab(driver)
 
-listener = keyboard.Listener(
-    on_press=on_press
-)
-
-listener.start()
-
-try:
-
-    save_counter = 0
-
-    for index, row in data.iterrows():
-
-        if STOP_FLAG:
-            break
-
-        process_row(
-            driver,
-            data,
-            index,
-            row
+    if not driver:
+        raise Exception(
+            "Tab ChatGPT tidak ditemukan"
         )
 
-        save_counter += 1
-
-        if save_counter % 3 == 0:
-
-            data.to_excel(
-                EXCEL_FILE,
-                index=False,
-                sheet_name=EXCEL_SHEET
-            )
-
-            logging.info(
-                "Auto save"
-            )
-
-finally:
-
-    data.to_excel(
+    data = pd.read_excel(
         EXCEL_FILE,
-        index=False,
-        sheet_name=EXCEL_SHEET
+        sheet_name=EXCEL_SHEET,
+        dtype=str
     )
 
-    listener.stop()
-
-    logging.info(
-        "Program selesai"
+    listener = keyboard.Listener(
+        on_press=on_press
     )
+
+    listener.start()
+
+    try:
+
+        save_counter = 0
+
+        for index, row in data.iterrows():
+
+            if STOP_FLAG:
+                break
+
+            process_row(
+                driver,
+                data,
+                index,
+                row
+            )
+
+            save_counter += 1
+
+            if save_counter % 3 == 0:
+
+                data.to_excel(
+                    EXCEL_FILE,
+                    index=False,
+                    sheet_name=EXCEL_SHEET
+                )
+
+                logging.info(
+                    "Auto save"
+                )
+
+    finally:
+
+        data.to_excel(
+            EXCEL_FILE,
+            index=False,
+            sheet_name=EXCEL_SHEET
+        )
+
+        listener.stop()
+
+        logging.info(
+            "Program selesai"
+        )
