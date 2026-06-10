@@ -1,3 +1,8 @@
-venv
-Data
-logs
+*
+!packages
+!app.py
+!appData.py
+!appOpenChrome.py
+!requirements.txt
+!config.py
+!README.md

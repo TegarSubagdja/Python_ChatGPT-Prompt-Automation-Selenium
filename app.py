@@ -2,6 +2,7 @@ import config
 import os
 import re
 import time
+import random
 import config
 import logging
 import pyperclip
@@ -195,13 +196,18 @@ def is_base_prompt_has_sent(driver):
     except Exception:
         return False
 
-def add_window_response_time(window, response_time):
+def add_window_response_time(window, response_time, maxlen):
     if len(window) == maxlen:
         window.popleft()
     window.append(response_time)
     total_response_time = sum(window)
     avg_response_time = total_response_time / len(window)
     return window, avg_response_time
+
+def wait_by_response(response_text):
+    len_text = len(response_text)
+    random_time = random.randint(len_text, int(len_text * 1.4))
+    time.sleep(random_time)
 
 # ==================================================
 # VALIDATION
@@ -220,6 +226,9 @@ def wait_response_finished(
         clear_prompt(driver)
 
         if get_voice_button(driver):
+            body = driver.find_element(By.TAG_NAME, "body")
+            body.send_keys(Keys.END)
+            time.sleep(1)
             return True
 
         time.sleep(3)
@@ -394,6 +403,8 @@ def process_row(
 
     response = copy_last_response(driver)
 
+    wait_by_response(response)
+
     if not response:
 
         logging.error(
@@ -463,8 +474,11 @@ if __name__ == "__main__":
         )
 
     if not is_base_prompt_has_sent(driver):
+        if get_company_knowledge(driver):
+            add_company_knowledge
         send_base_prompt(driver)
         wait_response_finished(driver)
+
     else:
         logging.info(
             "Base prompt has already sent"
@@ -482,8 +496,9 @@ if __name__ == "__main__":
 
     listener.start()
 
+    minlen = config.MIN_SAMPLES
     maxlen = config.MAX_LEN
-    window = deque(maxlen=10)
+    window = deque(maxlen=maxlen)
     total_response_time = 0
 
     try:
@@ -495,7 +510,7 @@ if __name__ == "__main__":
             if STOP_FLAG:
                 break
 
-            if "success" in str(row["status"]).lower():
+            if "success" in str(row["status"]).lower() or pd.notna(row["status"]):
                 continue
 
             start_time = time.perf_counter()
@@ -513,10 +528,11 @@ if __name__ == "__main__":
 
             window, avg_response_time = add_window_response_time(
                 window,
-                response_time
+                response_time,
+                maxlen
             )
 
-            if avg_response_time > config.AVG_RESPONSE_TIME_LIMIT:
+            if len(window) >= minlen and avg_response_time > config.AVG_RESPONSE_TIME_LIMIT:
                 create_new_chat(driver)
 
                 logging.info(
