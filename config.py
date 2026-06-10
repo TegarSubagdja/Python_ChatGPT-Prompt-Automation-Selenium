@@ -6,6 +6,8 @@ MAX_LEN = 10
 
 AVG_RESPONSE_TIME_LIMIT = 45
 
+AVG_RESPONSE_TIME_LIMIT_BOTTOM = 10
+
 STOP_FLAG = False
 
 CHATGPT_URL = "chatgpt.com"
@@ -28,6 +30,8 @@ LIMIT_KEYWORDS = [
     "reach the maximum",
     "you've reached the maximum",
     "starting a new chat",
+    "our systems have detected unusual activity",
+    "unusual activity"
 ]
 
 EXCEL_FILE = "Data/data.xlsx"
