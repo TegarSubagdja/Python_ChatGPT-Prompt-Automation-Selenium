@@ -474,8 +474,8 @@ if __name__ == "__main__":
         )
 
     if not is_base_prompt_has_sent(driver):
-        if get_company_knowledge(driver):
-            add_company_knowledge
+        if not get_company_knowledge(driver):
+            add_company_knowledge(driver)
         send_base_prompt(driver)
         wait_response_finished(driver)
 
