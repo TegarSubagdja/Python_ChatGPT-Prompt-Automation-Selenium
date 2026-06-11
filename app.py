@@ -408,8 +408,6 @@ def process_row(
 
     response = copy_last_response(driver)
 
-    wait_by_response(response)
-
     if not response:
 
         logging.error(
@@ -435,6 +433,8 @@ def process_row(
             f"Code tidak ditemukan : {row['code']}"
         )
         return False
+
+    wait_by_response(response)
 
 
 # ==================================================
