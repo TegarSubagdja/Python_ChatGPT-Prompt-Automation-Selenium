@@ -221,7 +221,7 @@ def wait_response_finished(
 
     start_time = time.time()
 
-    while time.time() - start_time < timeout_seconds:
+    while time.time() - start_time < timeout_seconds and not STOP_FLAG:
 
         clear_prompt(driver)
 
